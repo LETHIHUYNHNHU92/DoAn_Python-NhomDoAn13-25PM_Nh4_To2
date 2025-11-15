@@ -70,4 +70,37 @@ lbl_ngaysinh.grid(row=2, column=2, padx=5, pady=5, sticky="w")
 entry_ngaysinh = DateEntry(frame_info, width=18, date_pattern="yyyy-mm-dd")
 entry_ngaysinh.grid(row=2, column=3, padx=5, pady=5)
 
+
+
+# 1. Tạo Nhãn (Label) cho chữ "Lớp:"
+lbl_lop = tk.Label(frame_info, text="Lớp:")
+lbl_lop.grid(row=3, column=0, padx=5, pady=5, sticky="w")
+
+
+entry_lop = tk.Entry(frame_info, width=20)
+entry_lop.grid(row=3, column=1, padx=5, pady=5)
+
+
+# 3. Tạo Nhãn (Label) cho chữ "Trạng thái:"
+lbl_trangthai = tk.Label(frame_info, text="Trạng thái:")
+lbl_trangthai.grid(row=3, column=2, padx=5, pady=5, sticky="w")
+
+trangthai_values = ["Đang học", "Đã tốt nghiệp", "Bảo lưu", "Bị đình chỉ"]
+
+
+cbb_trangthai = ttk.Combobox(frame_info, values=trangthai_values, width=18)
+
+
+cbb_trangthai.grid(row=3, column=3, padx=5, pady=5)
+
+# --- Hàng 4: Địa chỉ ---
+
+# 1. Tạo Nhãn (Label) cho chữ "Địa chỉ:"
+lbl_diachi = tk.Label(frame_info, text="Địa chỉ:")
+lbl_diachi.grid(row=4, column=0, padx=5, pady=5, sticky="w")
+
+entry_diachi = tk.Entry(frame_info, width=60)
+entry_diachi.grid(row=4, column=1, padx=5, pady=5, columnspan=3)
+
+
 root.mainloop() # giu cho cua so luon hien thi khong thi no hien len roi tat lien
