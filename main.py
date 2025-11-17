@@ -102,5 +102,69 @@ lbl_diachi.grid(row=4, column=0, padx=5, pady=5, sticky="w")
 entry_diachi = tk.Entry(frame_info, width=60)
 entry_diachi.grid(row=4, column=1, padx=5, pady=5, columnspan=3)
 
+#KHUNG NÚT BẤM
+
+# 1. Tạo "Khay" mới để chứa các nút bấm
+frame_btn = tk.Frame(root)
+frame_btn.pack(pady=5)
+
+# 2. Tạo 6 Nút Bấm BÊN TRONG 'frame_btn'
+btn_them = tk.Button(frame_btn, text="Thêm", width=8)
+btn_them.grid(row=0, column=0, padx=5)
+
+btn_luu = tk.Button(frame_btn, text="Lưu", width=8)
+btn_luu.grid(row=0, column=1, padx=5)
+
+btn_sua = tk.Button(frame_btn, text="Sửa", width=8)
+btn_sua.grid(row=0, column=2, padx=5)
+
+btn_huy = tk.Button(frame_btn, text="Hủy", width=8)
+btn_huy.grid(row=0, column=3, padx=5)
+
+btn_xoa = tk.Button(frame_btn, text="Xóa", width=8)
+btn_xoa.grid(row=0, column=4, padx=5)
+
+btn_thoat = tk.Button(frame_btn, text="Thoát", width=8, command=root.quit)
+btn_thoat.grid(row=0, column=5, padx=5)
+
+# BẢNG DANH SÁCH HỌC SINH 
+
+# 1. Tạo Nhãn (Label) cho tiêu đề của bảng
+lbl_ds = tk.Label(root, text="Danh sách học sinh", font=("Arial", 12, "bold"))
+lbl_ds.pack(pady=5, padx=10, anchor="w")
+
+# 2. Tạo Bảng (Treeview)
+columns = ("mahs", "holot", "ten", "phai", "ngaysinh", "lop", "trangthai", "diachi")
+
+tree = ttk.Treeview(root, columns=columns, show="headings", height=10)
+
+# 3. Định nghĩa Tiêu đề (Headings) và Cột (Columns) cho Bảng
+tree.heading("mahs", text="Mã HS")
+tree.column("mahs", width=60, anchor="center")
+
+tree.heading("holot", text="Họ lót")
+tree.column("holot", width=120)
+
+tree.heading("ten", text="Tên")
+tree.column("ten", width=80)
+
+tree.heading("phai", text="Phái")
+tree.column("phai", width=50, anchor="center")
+
+tree.heading("ngaysinh", text="Ngày sinh")
+tree.column("ngaysinh", width=90, anchor="center")
+
+tree.heading("lop", text="Lớp")
+tree.column("lop", width=70, anchor="center")
+
+tree.heading("trangthai", text="Trạng thái")
+tree.column("trangthai", width=100)
+
+tree.heading("diachi", text="Địa chỉ")
+tree.column("diachi", width=200)
+
+
+# 4. Đặt Bảng (Treeview) lên cửa sổ
+tree.pack(padx=10, pady=5, fill="both", expand=True)
 
 root.mainloop() # giu cho cua so luon hien thi khong thi no hien len roi tat lien
