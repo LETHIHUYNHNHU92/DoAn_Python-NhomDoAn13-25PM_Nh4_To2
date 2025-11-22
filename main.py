@@ -2,7 +2,217 @@ import tkinter as tk #khai bao thu vien giao dien va gan cho tk
 from tkinter import ttk, messagebox  #ttk la goi nang cap cua tkinter lam cho giao dien xin hon
 from tkcalendar import DateEntry #tao ra o chon lich cho ngay sinh
 
+import mysql.connector 
 
+def connect_db(): 
+
+    return mysql.connector.connect(
+        # Tác dụng: Lệnh này 'mở cổng' kết nối và 'trả về' (return)
+       
+        host="localhost",
+        # Chỉ định địa chỉ máy chủ CSDL. 'localhost': Vì đang chạy XAMPP trên chính máy của em.
+        
+        user="root",
+        # Tên người dùng để đăng nhập MySQL.
+        # 'root' là tên người dùng 'admin' mặc định của XAMPP.
+        
+        password="",
+        
+        # rỗng: Vì XAMPP mặc định không đặt mật khẩu.
+        
+        database="qlhocsinh"
+        # Tác dụng: Chỉ định CSDL (cái 'ngăn tủ') mà chúng ta muốn làm việc.
+     
+    )
+
+# ===== HÀM TẢI DỮ LIỆU TỪ CSDL LÊN BẢNG =====
+def load_data():
+    # Tác dụng: Hàm này sẽ xóa sạch bảng cũ và tải lại dữ liệu mới nhất từ MySQL.
+    
+    # 1. Xóa dữ liệu cũ trên bảng 
+    for item in tree.get_children(): #  Lấy danh sách tất cả các dòng đang có trên bảng.
+        tree.delete(item)  #  Xóa từng dòng một.
+
+    # 2. Kết nối và Lấy dữ liệu mới
+    conn = connect_db()  # Gọi cái "chìa khóa" em vừa tạo để mở cổng.
+    cursor = conn.cursor() # Tạo một "con trỏ" để thực thi lệnh SQL.
+    
+    cursor.execute("SELECT * FROM hocsinh") 
+    # Gửi lệnh SQL "Lấy TẤT CẢ từ bảng hocsinh".
+    
+    rows = cursor.fetchall() 
+    # Lấy tất cả kết quả trả về và lưu vào biến 'rows'.
+
+    # 3. Đưa dữ liệu vào bảng (Treeview)
+    for row in rows:
+        # 'row' là một dòng dữ liệu (ví dụ: (1, 'Nguyen', 'An', ...))
+        tree.insert("", tk.END, values=row)
+        #  Chèn dòng 'row' vào cuối bảng (tk.END).
+        # 'values=row': Điền dữ liệu vào các cột tương ứng.
+
+    # 4. Đóng kết nối (Quan trọng)
+    conn.close()
+    #  Đóng cổng kết nối sau khi dùng xong để tiết kiệm tài nguyên máy.
+
+def them_hs():
+    try:
+        # 1. Lấy dữ liệu từ các ô nhập liệu
+        mahs = entry_mahs.get()
+        holot = entry_holot.get()
+        ten = entry_ten.get()
+        phai = gender_var.get()
+        ngaysinh = entry_ngaysinh.get()
+        lop = entry_lop.get()
+        trangthai = cbb_trangthai.get()
+        diachi = entry_diachi.get()
+
+        # 2. Kiểm tra dữ liệu (Validation)
+        if mahs == "" or ten == "":
+            messagebox.showwarning("Thiếu thông tin", "Vui lòng nhập Mã HS và Tên!")
+            return # Dừng hàm lại, không làm tiếp nữa
+
+        # 3. Kết nối và Thêm vào CSDL
+        conn = connect_db()
+        cursor = conn.cursor()
+        
+        # Câu lệnh SQL để chèn dữ liệu (8 dấu %s đại diện cho 8 cột)
+        sql = "INSERT INTO hocsinh (mahs, holot, ten, phai, ngaysinh, lop, trangthai, diachi) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"
+        values = (mahs, holot, ten, phai, ngaysinh, lop, trangthai, diachi)
+        
+        cursor.execute(sql, values) # Thực thi lệnh
+        conn.commit() # Phải có lệnh này thì MySQL mới lưu chính thức!
+        conn.close()
+
+        # 4. Thông báo và Tải lại bảng
+        messagebox.showinfo("Thành công", "Đã thêm học sinh mới!")
+        load_data() # bảng cập nhật ngay lập tức dòng vừa thêm
+        
+        #  Xóa trắng các ô nhập để nhập người tiếp theo
+        entry_mahs.delete(0, tk.END)
+        entry_ten.delete(0, tk.END)
+        # ... em có thể làm tương tự cho các ô khác nếu thích
+
+    except Exception as e:
+        messagebox.showerror("Lỗi", f"Không thể thêm học sinh:\n{str(e)}")
+
+
+def xoa_hs():
+    try:
+        selected_item = tree.selection() # Lấy dòng đang được bôi đen
+        
+        if not selected_item:
+            # Nếu chưa chọn dòng nào thì báo lỗi và dừng lại
+            messagebox.showwarning("Chưa chọn", "Vui lòng chọn học sinh cần xóa trên bảng!")
+            return
+
+        # 2. Lấy Mã HS của dòng đã chọn
+        values = tree.item(selected_item)['values'] #trả về ds dữ liệu của dòng đó: [101, 'Nguyen', 'An'...]
+        mahs = values[0]  #mahs nam o vi tri dau
+
+        # 3. Hiện hộp thoại Xác nhận (Yes/No)
+        confirm = messagebox.askyesno("Xác nhận xóa", f"Bạn có chắc muốn xóa học sinh có Mã {mahs} không?")
+        
+        if confirm == True:
+            # 4. Kết nối và Xóa trong CSDL
+            conn = connect_db()
+            cursor = conn.cursor()
+            
+            cursor.execute("DELETE FROM hocsinh WHERE mahs=%s", (mahs,))
+           
+            
+            conn.commit() # Nhớ commit để lưu thay đổi!
+            conn.close()
+
+            # 5. Thông báo và Tải lại bảng
+            messagebox.showinfo("Thành công", "Đã xóa học sinh!")
+            load_data()
+            
+            #  Xóa trắng các ô nhập liệu
+            entry_mahs.delete(0, tk.END)
+            entry_ten.delete(0, tk.END)
+            
+    except Exception as e:
+        messagebox.showerror("Lỗi", f"Không thể xóa:\n{str(e)}")
+
+def sua_hs():
+    selected_item = tree.selection()
+    if not selected_item:
+        messagebox.showwarning("Chưa chọn", "Hãy chọn học sinh cần sửa trên bảng!")
+        return
+
+    values = tree.item(selected_item)['values']
+
+    entry_mahs.delete(0, tk.END)
+    entry_holot.delete(0, tk.END)
+    entry_ten.delete(0, tk.END)
+    entry_lop.delete(0, tk.END)
+    entry_diachi.delete(0, tk.END)
+
+    # Điền dữ liệu cũ vào form để người dùng sửa
+    entry_mahs.insert(0, values[0])
+    entry_holot.insert(0, values[1])
+    entry_ten.insert(0, values[2])
+    gender_var.set(values[3])
+    entry_ngaysinh.set_date(values[4])
+    entry_lop.insert(0, values[5])
+    cbb_trangthai.set(values[6])
+    entry_diachi.insert(0, values[7])
+
+def luu_hs():
+    try:
+        # 1. Lấy dữ liệu MỚI từ các ô nhập liệu
+        mahs = entry_mahs.get()
+        holot = entry_holot.get()
+        ten = entry_ten.get()
+        phai = gender_var.get()
+        ngaysinh = entry_ngaysinh.get()
+        lop = entry_lop.get()
+        trangthai = cbb_trangthai.get()
+        diachi = entry_diachi.get()
+
+        # 2. Kết nối và Cập nhật (UPDATE)
+        conn = connect_db()
+        cursor = conn.cursor()
+        
+        # Lệnh SQL Update
+        sql = """UPDATE hocsinh 
+                 SET holot=%s, ten=%s, phai=%s, ngaysinh=%s, lop=%s, trangthai=%s, diachi=%s 
+                 WHERE mahs=%s"""
+        
+        values = (holot, ten, phai, ngaysinh, lop, trangthai, diachi, mahs)
+        
+        cursor.execute(sql, values)
+        conn.commit()
+        conn.close()
+
+        # 3. Thông báo và Tải lại bảng
+        messagebox.showinfo("Thành công", "Đã lưu thông tin học sinh!")
+        load_data()
+        
+        # Xóa trắng form sau khi lưu xong
+        entry_mahs.delete(0, tk.END)
+        entry_ten.delete(0, tk.END)
+        # (Em có thể thêm code xóa các ô khác nếu muốn)
+
+    except Exception as e:
+        messagebox.showerror("Lỗi", f"Không thể lưu:\n{str(e)}")
+
+def clear_input():
+   
+    entry_mahs.delete(0, tk.END)
+    entry_holot.delete(0, tk.END)
+    entry_ten.delete(0, tk.END)
+    entry_lop.delete(0, tk.END)
+    entry_diachi.delete(0, tk.END)
+    
+    # Đặt lại các ô chọn về mặc định
+    gender_var.set("Nam")
+    entry_ngaysinh.set_date(None) # Hoặc đặt ngày hiện tại
+    cbb_trangthai.set("")
+    
+    # Bỏ chọn dòng đang bôi đen trên bảng (nếu có)
+    for item in tree.selection():
+        tree.selection_remove(item)
 #ham canh giua
 def center_window(win,w = 800,h = 600):
     ws = win.winfo_screenwidth() #lay chieu rong man hinh
@@ -14,7 +224,7 @@ def center_window(win,w = 800,h = 600):
 # tao cua so chinh
 #root la cua so chinh la ngoi nha con lai la do dac trong nha
 root = tk.Tk() #tao cua so chinh 
-root.title(" Quản lý Học sinh ") #dat tieu de cho cua so
+root.title(" Quản Lý Học Sinh ") #dat tieu de cho cua so
 center_window(root,800,600) #kich thuoc cua so
 root.resizable(False, False) # ngan nguoi dung thay doi kich thuoc
 
@@ -109,22 +319,22 @@ frame_btn = tk.Frame(root)
 frame_btn.pack(pady=5)
 
 # 2. Tạo 6 Nút Bấm BÊN TRONG 'frame_btn'
-btn_them = tk.Button(frame_btn, text="Thêm", width=8)
+btn_them = tk.Button(frame_btn, text="Thêm", width=8, command=them_hs)
 btn_them.grid(row=0, column=0, padx=5)
 
-btn_luu = tk.Button(frame_btn, text="Lưu", width=8)
+btn_luu = tk.Button(frame_btn, text="Lưu", width=8,command=luu_hs)
 btn_luu.grid(row=0, column=1, padx=5)
 
-btn_sua = tk.Button(frame_btn, text="Sửa", width=8)
+btn_sua = tk.Button(frame_btn, text="Sửa", width=8, command=sua_hs)
 btn_sua.grid(row=0, column=2, padx=5)
 
-btn_huy = tk.Button(frame_btn, text="Hủy", width=8)
+btn_huy = tk.Button(frame_btn, text="Hủy", width=8,command=clear_input)
 btn_huy.grid(row=0, column=3, padx=5)
 
-btn_xoa = tk.Button(frame_btn, text="Xóa", width=8)
+btn_xoa = tk.Button(frame_btn, text="Xóa", width=8,command=xoa_hs)
 btn_xoa.grid(row=0, column=4, padx=5)
 
-btn_thoat = tk.Button(frame_btn, text="Thoát", width=8, command=root.quit)
+btn_thoat = tk.Button(frame_btn, text="Thoát", width=8, command=root.quit) #dung chuong trình
 btn_thoat.grid(row=0, column=5, padx=5)
 
 # BẢNG DANH SÁCH HỌC SINH 
@@ -166,5 +376,8 @@ tree.column("diachi", width=200)
 
 # 4. Đặt Bảng (Treeview) lên cửa sổ
 tree.pack(padx=10, pady=5, fill="both", expand=True)
+
+load_data()
+clear_input()
 
 root.mainloop() # giu cho cua so luon hien thi khong thi no hien len roi tat lien
