@@ -213,6 +213,43 @@ def clear_input():
     # Bỏ chọn dòng đang bôi đen trên bảng (nếu có)
     for item in tree.selection():
         tree.selection_remove(item)
+
+# ===== HÀM TÌM KIẾM HỌC SINH =====
+def tim_kiem_hs():
+    try:
+        # 1. Lấy từ khóa người dùng nhập vào
+        keyword = entry_timkiem.get()
+        
+        if keyword == "":
+            messagebox.showwarning("Thông báo", "Vui lòng nhập tên hoặc mã số để tìm!")
+            return
+
+        # 2. Xóa sạch bảng hiện tại
+        for item in tree.get_children():
+            tree.delete(item)
+
+        # 3. Kết nối và Tìm trong CSDL
+        conn = connect_db()
+        cursor = conn.cursor()
+        
+        sql = "SELECT * FROM hocsinh WHERE ten LIKE %s OR mahs LIKE %s"
+        params = (f"%{keyword}%", f"%{keyword}%")
+        
+        cursor.execute(sql, params)
+        rows = cursor.fetchall()
+        
+        # 4. Đổ kết quả tìm được vào bảng
+        if len(rows) == 0:
+             messagebox.showinfo("Thông báo", "Không tìm thấy học sinh nào!")
+        
+        for row in rows:
+            tree.insert("", tk.END, values=row)
+            
+        conn.close()
+        
+    except Exception as e:
+        messagebox.showerror("Lỗi", f"Lỗi tìm kiếm:\n{str(e)}")
+
 #ham canh giua
 def center_window(win,w = 800,h = 600):
     ws = win.winfo_screenwidth() #lay chieu rong man hinh
@@ -337,6 +374,21 @@ btn_xoa.grid(row=0, column=4, padx=5)
 btn_thoat = tk.Button(frame_btn, text="Thoát", width=8, command=root.quit) #dung chuong trình
 btn_thoat.grid(row=0, column=5, padx=5)
 
+frame_timkiem = tk.Frame(root)
+frame_timkiem.pack(pady=10)
+
+lbl_tim = tk.Label(frame_timkiem, text="Nhập Tên hoặc Mã số:")
+lbl_tim.grid(row=0, column=0, padx=5)
+
+entry_timkiem = tk.Entry(frame_timkiem, width=30)
+entry_timkiem.grid(row=0, column=1, padx=5)
+
+btn_tim = tk.Button(frame_timkiem, text="Tìm kiếm", width=10, bg="#87CEEB", command=tim_kiem_hs)
+btn_tim.grid(row=0, column=2, padx=5)
+
+btn_hienthi = tk.Button(frame_timkiem, text="Hiện tất cả", width=10, command=load_data)
+btn_hienthi.grid(row=0, column=3, padx=5)
+
 # BẢNG DANH SÁCH HỌC SINH 
 
 # 1. Tạo Nhãn (Label) cho tiêu đề của bảng
@@ -374,7 +426,6 @@ tree.heading("diachi", text="Địa chỉ")
 tree.column("diachi", width=200)
 
 
-# 4. Đặt Bảng (Treeview) lên cửa sổ
 tree.pack(padx=10, pady=5, fill="both", expand=True)
 
 load_data()
