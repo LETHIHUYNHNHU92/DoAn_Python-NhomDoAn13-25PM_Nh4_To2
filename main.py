@@ -12,7 +12,7 @@ def connect_db():
         # Tác dụng: Lệnh này 'mở cổng' kết nối và 'trả về' (return)
        
         host="localhost",
-        # Chỉ định địa chỉ máy chủ CSDL. 'localhost': Vì đang chạy XAMPP trên chính máy của em.
+        # Chỉ định địa chỉ máy chủ CSDL. 'localhost': Vì đang chạy XAMPP trên chính máy này.
         
         user="root",
         # Tên người dùng để đăng nhập MySQL.
