@@ -1,6 +1,8 @@
 import tkinter as tk #khai bao thu vien giao dien va gan cho tk
 from tkinter import ttk, messagebox  #ttk la goi nang cap cua tkinter lam cho giao dien xin hon
 from tkcalendar import DateEntry #tao ra o chon lich cho ngay sinh
+import pandas as pd
+from datetime import datetime
 
 import mysql.connector 
 
@@ -250,6 +252,34 @@ def tim_kiem_hs():
     except Exception as e:
         messagebox.showerror("Lỗi", f"Lỗi tìm kiếm:\n{str(e)}")
 
+def xuat_excel():
+    try:
+        # 1. Kết nối CSDL để lấy dữ liệu
+        conn = connect_db()
+        
+        # 2. Dùng thư viện Pandas để đọc dữ liệu từ MySQL
+        # (Pandas rất mạnh, nó đọc 1 lệnh là xong cả bảng)
+        sql = "SELECT * FROM hocsinh"
+        df = pd.read_sql(sql, conn)
+        
+        # 3. Đổi tên cột cho đẹp file Excel
+        # (Cột trong CSDL là 'mahs', 'holot'... -> Ra Excel thành 'Mã HS', 'Họ lót'...)
+        df.columns = ['Mã HS', 'Họ lót', 'Tên', 'Phái', 'Ngày sinh', 'Lớp', 'Trạng thái', 'Địa chỉ']
+        
+        # 4. Tạo tên file có kèm ngày giờ hiện tại (để không bị trùng)
+        ngay_gio = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        ten_file = f"DanhSachHocSinh_{ngay_gio}.xlsx"
+        
+        # 5. Xuất ra file Excel
+        df.to_excel(ten_file, index=False, engine='openpyxl')
+        
+        conn.close()
+        
+        messagebox.showinfo("Thành công", f"Đã xuất file Excel: {ten_file}\n(File nằm trong thư mục dự án)")
+        
+    except Exception as e:
+        messagebox.showerror("Lỗi", f"Không thể xuất file:\n{str(e)}")
+
 #ham canh giua
 def center_window(win,w = 800,h = 600):
     ws = win.winfo_screenwidth() #lay chieu rong man hinh
@@ -267,7 +297,7 @@ root.resizable(False, False) # ngan nguoi dung thay doi kich thuoc
 
 
 # tieu de cho ung dung
-lbl_title = tk.Label(root,text = "QUAN LY HOC SINH",font = ("Arial",18,"bold")) #bold la in dam #tao nhan dan gan cho lbl_title
+lbl_title = tk.Label(root,text = "QUẢN LÝ HỌC SINH",font = ("Arial",18,"bold")) #bold la in dam #tao nhan dan gan cho lbl_title
 lbl_title.pack(pady = 10) #dat nhan dan do root va khoang trong tren duoi nhan dan la 10pixel
 
 #tao khung du lieu(khay vo hinh de chua do dac trong nha)
@@ -286,13 +316,13 @@ entry_mahs = tk.Entry(frame_info,width = 20)
 entry_mahs.grid(row = 0,column = 1,padx = 5,pady = 5,sticky ="w")
 
 #hang 1
-lbl_holot = tk.Label(frame_info,text ="Ho lot")
+lbl_holot = tk.Label(frame_info,text ="Họ lót")
 lbl_holot.grid(row = 1,column = 0,padx = 5,pady = 5,sticky ="w") #sticky ="w" la west dinh le trai
 
 entry_holot = tk.Entry(frame_info,width = 20)
 entry_holot.grid(row = 1,column = 1,padx = 5,pady = 5,sticky ="w")
 
-lbl_ten = tk.Label(frame_info,text = "Ten")
+lbl_ten = tk.Label(frame_info,text = "Tên")
 lbl_ten.grid(row = 1,column = 2,padx = 5,pady = 5,sticky = "w")
 
 entry_ten = tk.Entry(frame_info,width = 20)
@@ -373,6 +403,9 @@ btn_xoa.grid(row=0, column=4, padx=5)
 
 btn_thoat = tk.Button(frame_btn, text="Thoát", width=8, command=root.quit) #dung chuong trình
 btn_thoat.grid(row=0, column=5, padx=5)
+
+btn_excel = tk.Button(frame_btn, text="Xuất Excel", width=10, bg="#90EE90", command=xuat_excel)
+btn_excel.grid(row=0, column=6, padx=5) 
 
 frame_timkiem = tk.Frame(root)
 frame_timkiem.pack(pady=10)
