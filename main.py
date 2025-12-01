@@ -17,11 +17,10 @@ def connect_db():
      
     )
 
-# ===== HÀM TẢI DỮ LIỆU TỪ CSDL LÊN BẢNG =====
 def load_data():
     
-    for item in tree.get_children(): #  Lấy danh sách tất cả các dòng đang có trên bảng.
-        tree.delete(item)  #  Xóa từng dòng một.
+    for item in tree.get_children(): 
+        tree.delete(item)  
 
     conn = connect_db()  
     cursor = conn.cursor() 
@@ -244,7 +243,7 @@ root.resizable(False, False)
 lbl_title = tk.Label(root,text = "QUẢN LÝ HỌC SINH",font = ("Arial",18,"bold")) 
 lbl_title.pack(pady = 10) 
 
-frame_info = tk.frame(root)
+frame_info = tk.Frame(root)
 frame_info.pack(pady = 5,padx = 10,fill = "x") 
 
 lbl_mahs = tk.Label(frame_info,text ="Mã học sinh") 
