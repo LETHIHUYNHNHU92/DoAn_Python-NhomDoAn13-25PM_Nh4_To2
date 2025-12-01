@@ -17,7 +17,6 @@ def connect_db():
         
         database="qlhocsinh"
        
-     
     )
 
 
@@ -325,8 +324,6 @@ trangthai_values = ["Đang học", "Đã tốt nghiệp", "Bảo lưu", "Bị đ
 
 
 cbb_trangthai = ttk.Combobox(frame_info, values=trangthai_values, width=18)
-
-
 cbb_trangthai.grid(row=3, column=3, padx=5, pady=5)
 
 
@@ -409,7 +406,6 @@ tree.column("trangthai", width=100)
 
 tree.heading("diachi", text="Địa chỉ")
 tree.column("diachi", width=200)
-
 
 tree.pack(padx=10, pady=5, fill="both", expand=True)
 
