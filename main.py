@@ -381,10 +381,10 @@ btn_hienthi.grid(row=0, column=3, padx=5)
 lbl_ds = tk.Label(root, text="Danh sách học sinh", font=("Arial", 12, "bold"))
 lbl_ds.pack(pady=5, padx=10, anchor="w")
 
+
 columns = ("mahs", "holot", "ten", "phai", "ngaysinh", "lop", "trangthai", "diachi")
 
 tree = ttk.Treeview(root, columns=columns, show="headings", height=10)
-
 
 tree.heading("mahs", text="Mã HS")
 tree.column("mahs", width=60, anchor="center")
