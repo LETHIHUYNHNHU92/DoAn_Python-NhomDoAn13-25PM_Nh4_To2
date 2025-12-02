@@ -252,6 +252,50 @@ def xuat_excel():
     except Exception as e:
         messagebox.showerror("Lỗi", f"Không thể xuất file:\n{str(e)}")
 
+def mo_cua_so_diem():
+
+    selected_item = tree.selection()
+    if not selected_item:
+        messagebox.showwarning("Chưa chọn", "Vui lòng chọn học sinh cần nhập điểm!")
+        return
+
+    values = tree.item(selected_item)['values']
+    mahs_hien_tai = values[0]
+    ten_hien_tai = values[2]
+
+    win_diem = tk.Toplevel(root)
+    win_diem.title("Nhập Điểm")
+    win_diem.geometry("300x150")
+    
+    tk.Label(win_diem, text=f"Nhập điểm cho: {ten_hien_tai}", font=("Arial", 10, "bold")).pack(pady=10)
+    
+    entry_diem_moi = tk.Entry(win_diem, width=10, font=("Arial", 12))
+    entry_diem_moi.pack(pady=5)
+    
+    if len(values) > 8 and values[8] != 'None': 
+        entry_diem_moi.insert(0, values[8])
+
+    def luu_diem_sql():
+        try:
+            diem_so = float(entry_diem_moi.get()) 
+            
+            conn = connect_db()
+            cursor = conn.cursor()
+            cursor.execute("UPDATE hocsinh SET diem=%s WHERE mahs=%s", (diem_so, mahs_hien_tai))
+            conn.commit()
+            conn.close()
+            
+            messagebox.showinfo("Xong", "Đã lưu điểm thành công!")
+            win_diem.destroy() 
+            load_data() 
+            
+        except ValueError:
+            messagebox.showerror("Lỗi", "Điểm phải là số!")
+        except Exception as e:
+            messagebox.showerror("Lỗi", str(e))
+
+    tk.Button(win_diem, text="Lưu Điểm", bg="#FFD700", command=luu_diem_sql).pack(pady=10)
+
 def center_window(win,w = 800,h = 600):
     ws = win.winfo_screenwidth() 
     hs = win.winfo_screenheight() 
@@ -359,6 +403,9 @@ btn_thoat.grid(row=0, column=5, padx=5)
 btn_excel = tk.Button(frame_btn, text="Xuất Excel", width=10, bg="#90EE90", command=xuat_excel)
 btn_excel.grid(row=0, column=6, padx=5) 
 
+btn_nhap_diem = tk.Button(frame_btn, text="Nhập Điểm", width=10, bg="#FFD700", command=mo_cua_so_diem)
+btn_nhap_diem.grid(row=0, column=7, padx=5) 
+
 frame_timkiem = tk.Frame(root)
 frame_timkiem.pack(pady=10)
 
@@ -379,8 +426,7 @@ lbl_ds = tk.Label(root, text="Danh sách học sinh", font=("Arial", 12, "bold")
 lbl_ds.pack(pady=5, padx=10, anchor="w")
 
 
-columns = ("mahs", "holot", "ten", "phai", "ngaysinh", "lop", "trangthai", "diachi")
-
+columns = ("mahs", "holot", "ten", "phai", "ngaysinh", "lop", "trangthai", "diachi", "diem")
 tree = ttk.Treeview(root, columns=columns, show="headings", height=10)
 
 tree.heading("mahs", text="Mã HS")
@@ -406,6 +452,9 @@ tree.column("trangthai", width=100)
 
 tree.heading("diachi", text="Địa chỉ")
 tree.column("diachi", width=200)
+
+tree.heading("diem", text="Điểm TB")
+tree.column("diem", width=60, anchor="center")
 
 tree.pack(padx=10, pady=5, fill="both", expand=True)
 
